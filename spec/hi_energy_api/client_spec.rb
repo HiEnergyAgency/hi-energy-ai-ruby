@@ -99,4 +99,20 @@ RSpec.describe HiEnergyApi::Client do
       expect { described_class.new }.to raise_error(ArgumentError, /api_key or bearer_token/)
     end
   end
+
+  describe "dry_run" do
+    it "appends dry_run=true when enabled on the client" do
+      dry_client = described_class.new(api_key: api_key, base_url: base_url, dry_run: true)
+
+      stub_request(:get, "#{base_url}/deals")
+        .with(query: hash_including("dry_run" => "true"))
+        .to_return(
+          status: 200,
+          headers: { "Content-Type" => "application/json" },
+          body: { data: [] }.to_json
+        )
+
+      expect(dry_client.deals.list).to be_success
+    end
+  end
 end

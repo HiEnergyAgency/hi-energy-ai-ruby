@@ -2,14 +2,18 @@
 
 module HiEnergyApi
   class Configuration
-    PRODUCTION_BASE_URL = "https://app.hienergy.ai/api/v1"
+    APP_ORIGIN = "https://app.hienergy.ai"
+    API_BASE_URL = "https://app.hienergy.ai/api/v1"
+    DOCUMENTATION_URL = "https://app.hienergy.ai/api_documentation"
     DEFAULT_TIMEOUT = 30
 
-    attr_accessor :api_key, :bearer_token, :base_url, :timeout, :user_agent
+    attr_accessor :api_key, :bearer_token, :base_url, :app_origin, :timeout, :user_agent, :dry_run
 
     def initialize
-      @base_url = PRODUCTION_BASE_URL
+      @app_origin = APP_ORIGIN
+      @base_url = API_BASE_URL
       @timeout = DEFAULT_TIMEOUT
+      @dry_run = false
       @user_agent = "hi_energy_api/#{HiEnergyApi::VERSION} (Ruby #{RUBY_VERSION})"
     end
 

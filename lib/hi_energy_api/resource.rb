@@ -25,5 +25,13 @@ module HiEnergyApi
     def delete(path, params: {})
       client.delete(path, params: params)
     end
+
+    def app_get(path, params: {})
+      client.app_get(path, params: params)
+    end
+
+    def app_post(path, params: {}, body: nil)
+      client.app_post(path, params: params, body: body)
+    end
   end
 end

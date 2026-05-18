@@ -1,126 +1,215 @@
-# Hi Energy API
+# hi_energy_api
 
-Ruby client for the [Hi Energy AI](https://app.hienergy.ai) REST API (`/api/v1`).
+Official Ruby client for the **[Hi Energy AI API](https://app.hienergy.ai/api_documentation)**.
 
-Authenticate with your integration API key (`X-Api-Key` header) or an OAuth bearer token. API keys are managed in the Hi Energy app under **API Documentation → API Key**.
+The API aggregates affiliate data from FlexOffers, CJ, Rakuten, Impact, Awin, Partnerize, Pepperjam, ShareASale, and more. This gem wraps **API v1** at `https://app.hienergy.ai/api/v1` and documents every endpoint from the [API documentation](https://app.hienergy.ai/api_documentation).
 
 ## Installation
-
-```ruby
-gem "hi_energy_api", github: "HiEnergyAgency/hi_energy_api"
-```
-
-Or after publishing to RubyGems:
 
 ```ruby
 gem "hi_energy_api"
 ```
 
+```bash
+gem install hi_energy_api
+```
+
 ## Quick start
+
+Get an API key from [API Documentation → API Key](https://app.hienergy.ai/api_documentation/api_key) (sign-in required).
 
 ```ruby
 require "hi_energy_api"
 
 client = HiEnergyApi.new(api_key: ENV["HI_ENERGY_API_KEY"])
 
-client.tools.list
-client.schema.fetch
+client.advertisers.list(limit: 5)
+client.deals.list(active: true, country: "US")
 client.search.query(q: "nike", types: "advertisers,deals", per_type_limit: 5)
-
-advertisers = client.advertisers.list(limit: 10)
-advertiser = client.advertisers.find(123)
-
-deals = client.deals.list(active: true, country: "US", limit: 25)
-deal = client.deals.find(456)
-
-contacts = client.contacts.list(q: "acme", limit: 5)
-report = client.reports.find("top_advertisers_by_sales", period: "last_90_days", limit: 10)
-
-publisher = client.publishers.find(16)
+client.reports.find("top_advertisers_by_sales", period: "last_90_days", limit: 10)
 ```
+
+## Authentication
+
+Preferred for integrations and agents:
+
+```http
+X-Api-Key: YOUR_API_KEY
+```
+
+```ruby
+client = HiEnergyApi.new(api_key: "your_integration_key")
+```
+
+OAuth bearer tokens (signed-in user flows):
+
+```ruby
+client = HiEnergyApi.new(bearer_token: ENV["AUTH0_ACCESS_TOKEN"])
+```
+
+Legacy `api_key` query parameters are supported by the API but not used by this client.
 
 ## Configuration
 
 ```ruby
 HiEnergyApi.configure do |config|
   config.api_key = ENV["HI_ENERGY_API_KEY"]
-  config.base_url = "http://localhost:3000/api/v1"
+  config.base_url = HiEnergyApi::Configuration::API_BASE_URL
+  config.app_origin = HiEnergyApi::Configuration::APP_ORIGIN
   config.timeout = 60
+  config.dry_run = false
 end
 
 client = HiEnergyApi.new
 ```
 
-Per-client overrides:
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `base_url` | `https://app.hienergy.ai/api/v1` | REST API v1 base URL |
+| `app_origin` | `https://app.hienergy.ai` | App origin for `/mcp` routes |
+| `api_key` | — | `X-Api-Key` header value |
+| `bearer_token` | — | `Authorization: Bearer` value |
+| `dry_run` | `false` | Append `dry_run=true` to requests when enabled |
+| `timeout` | `30` | Request timeout in seconds |
+
+Local development:
 
 ```ruby
 client = HiEnergyApi.new(
-  api_key: "your_key",
-  base_url: "https://app.hienergy.ai/api/v1",
-  timeout: 30
+  api_key: ENV["HI_ENERGY_API_KEY"],
+  base_url: "http://localhost:3000/api/v1",
+  app_origin: "http://localhost:3000"
 )
 ```
 
-OAuth bearer token (signed-in user flows):
+## API resources
+
+Aligned with the [API playground](https://app.hienergy.ai/api_documentation):
+
+| Client | HTTP | Notes |
+|--------|------|-------|
+| `search` | `GET /search` | Universal Searchkick omnibox |
+| `deals` | `GET /deals`, `GET /deals/:id` | Offset pagination via `page`, `per_page`, `limit` |
+| `advertisers` | `GET /advertisers`, `GET /advertisers/:id` | Filters, similar/related, contacts |
+| `advertisers.search_by_domain` | `GET /advertisers/search_by_domain` | Domain lookup endpoint |
+| `advertisers.by_domain` | `GET /advertisers?domain=` | Shorthand filter |
+| `contacts` | `GET /contacts`, `POST /contacts` | Search and create |
+| `transactions` | `GET /transactions`, `GET /transactions/:id` | Date and advertiser filters |
+| `clicks` | `GET /clicks` | Requires `start_date` and `end_date` (≤90 days) |
+| `opportunities` | `GET /opportunities` | Publisher opportunity advertisers |
+| `verticals` | `GET /verticals` | Industry categories |
+| `tags` | `GET /tags`, `GET /tags/:id/advertisers` | Searchkick tag search |
+| `publishers` | CRUD + `find_linkedin_users` | Publisher and credential management |
+| `agencies` | `GET /agencies`, `GET /agencies/:id` | |
+| `networks` | `GET /networks`, `GET /networks/:id` | |
+| `reports` | `GET /reports`, `GET /reports/:id` | Major aliases and materialized views |
+| `users` | `GET/POST/PATCH /users` | Scoped user management |
+| `status_changes` | `GET /status_changes` | Advertiser status history |
+| `deeplinks` | `POST /deeplinks/generate` | Tracking link builder |
+| `domains` | `GET /domains/search` | Domain search |
+| `tools` | `GET /tools` | MCP tool catalog (JSON Schema) |
+| `schema` | `GET /schema` | OpenAPI 3.0 document |
+| `exports` | `GET/POST /exports` | Report exports |
+| `mcp` | `GET/POST /mcp` | MCP bootstrap and JSON-RPC (app origin) |
+
+### MCP
+
+MCP routes live on the app origin, not under `/api/v1`:
 
 ```ruby
-client = HiEnergyApi.new(bearer_token: ENV["AUTH0_ACCESS_TOKEN"])
+client.mcp.bootstrap
+client.mcp.integration
+client.mcp.initialize_session
+client.mcp.call("tools/list")
 ```
 
-## Resources
+### Pagination
 
-| Accessor | Endpoints |
-|----------|-----------|
-| `tools` | `GET /tools` |
-| `schema` | `GET /schema` |
-| `search` | `GET /search` |
-| `advertisers` | list, find, search_by_domain, contacts, similar, related |
-| `deals` | list, find, types, translate |
-| `contacts` | list, create, add |
-| `transactions` | list, find |
-| `clicks` | list (requires `start_date`, `end_date`) |
-| `opportunities` | list |
-| `reports` | list, find |
-| `publishers` | list, find, create, update |
-| `agencies` | list, find |
-| `networks` | list, find |
-| `status_changes` | list |
-| `tags` | list, advertisers |
-| `users` | list, find, create, update, resend_invitation, rotate_api_key |
-| `verticals` | list |
-| `domains` | search |
-| `deeplinks` | generate |
-| `exports` | list, find, create |
-
-Low-level HTTP access:
+List endpoints return `data` plus `meta` (`current_page`, `next_page`, `per_page`, `has_more`). Advertisers also support cursor mode when you pass `cursor` explicitly.
 
 ```ruby
-client.get("/advertisers", params: { limit: 5 })
-client.post("/deeplinks/generate", body: { url: "https://example.com/product" })
+response = client.deals.list(limit: 50)
+
+client.paginate("/deals", params: { limit: 50 }).each do |page|
+  page.data.each { |deal| puts deal }
+end
 ```
+
+### Dry run
+
+Validate request wiring without consuming live data:
+
+```ruby
+client = HiEnergyApi.new(api_key: key, dry_run: true)
+client.deals.list(active: true)
+```
+
+Or per request: `client.deals.list(active: true, dry_run: true)`.
 
 ## Responses and errors
 
-Successful calls return `HiEnergyApi::Response` with `#data`, `#meta`, `#status`, and `#to_h`.
+Success responses are `HiEnergyApi::Response` objects:
 
-Failed calls raise `HiEnergyApi::Error` with `#status`, `#code`, `#message`, and `#request_id` from the API error envelope.
+```ruby
+response = client.advertisers.list(limit: 5)
+response.data
+response.meta
+response.status
+```
+
+Errors raise `HiEnergyApi::Error`:
 
 ```ruby
 begin
   client.advertisers.find(999)
 rescue HiEnergyApi::Error => e
-  puts e.code
-  puts e.request_id
+  e.code
+  e.message
+  e.request_id
+  e.status
 end
 ```
+
+## Rate limits
+
+Per the API documentation:
+
+- Hi Energy publisher accounts: **1,000 requests/hour**
+- Other publishers: **10,000 requests/hour**
+
+Rate limit headers: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`.
+
+## Publishing to RubyGems
+
+Maintainers with access:
+
+```bash
+gem build hi_energy_api.gemspec
+gem push hi_energy_api-0.1.0.gem
+```
+
+RubyGems MFA is required (`rubygems_mfa_required` in the gemspec).
 
 ## Development
 
 ```bash
 bundle install
 bundle exec rspec
+bundle exec rake
 ```
+
+Console:
+
+```bash
+bin/console
+```
+
+## Links
+
+- [API documentation](https://app.hienergy.ai/api_documentation)
+- [OpenAPI reference](https://app.hienergy.ai/api_documentation/openapi)
+- [Source code](https://github.com/HiEnergyAgency/hi_energy_api)
 
 ## License
 
-Proprietary — Hi Energy Agency. Contact patrick@hienergy.ai for licensing.
+MIT — see [LICENSE.txt](LICENSE.txt). API access is subject to Hi Energy AI platform terms; an API key is required.

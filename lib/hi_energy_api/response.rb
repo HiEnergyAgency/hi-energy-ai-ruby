@@ -26,5 +26,31 @@ module HiEnergyApi
     def to_h
       body.is_a?(Hash) ? body : { "data" => body }
     end
+
+    def pagination
+      return meta if meta.is_a?(Hash) && meta.key?("pagination")
+
+      body.is_a?(Hash) ? (body["pagination"] || body[:pagination]) : nil
+    end
+
+    def next_page
+      return nil unless meta.is_a?(Hash)
+
+      meta["next_page"] || meta[:next_page]
+    end
+
+    def has_more?
+      return meta["has_more"] if meta.is_a?(Hash) && meta.key?("has_more")
+      return meta[:has_more] if meta.is_a?(Hash) && meta.key?(:has_more)
+
+      !next_page.nil?
+    end
+
+    def next_page_params
+      page = next_page
+      return nil if page.nil?
+
+      { page: page }
+    end
   end
 end

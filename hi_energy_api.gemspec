@@ -8,18 +8,27 @@ Gem::Specification.new do |spec|
   spec.authors = [ "Patrick Karsh" ]
   spec.email = [ "patrick@hienergy.ai" ]
 
-  spec.summary = "Ruby client for the Hi Energy AI affiliate marketing API"
-  spec.description = "Official Ruby gem for Hi Energy AI REST API v1 (advertisers, deals, contacts, reports, and more)."
+  spec.summary = "Official Ruby client for the Hi Energy AI affiliate marketing API"
+  spec.description = <<~DESC.strip
+    Ruby gem for the Hi Energy AI REST API v1 at https://app.hienergy.ai/api/v1.
+    Covers advertisers, deals, contacts, transactions, reports, universal search,
+    MCP bootstrap, and OpenAPI schema discovery. See https://app.hienergy.ai/api_documentation.
+  DESC
   spec.homepage = "https://github.com/HiEnergyAgency/hi_energy_api"
+  spec.license = "MIT"
   spec.required_ruby_version = ">= 3.2.0"
 
   spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["source_code_uri"] = spec.homepage
+  spec.metadata["documentation_uri"] = "https://app.hienergy.ai/api_documentation"
+  spec.metadata["changelog_uri"] = "https://github.com/HiEnergyAgency/hi_energy_api/blob/main/CHANGELOG.md"
   spec.metadata["rubygems_mfa_required"] = "true"
 
-  spec.files = Dir.chdir(__dir__) { Dir.glob("lib/**/*") }.select { |f| File.file?(f) }
-  spec.bindir = "exe"
-  spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
+  spec.files = Dir.chdir(__dir__) do
+    Dir.glob("{lib/**/*,README.md,CHANGELOG.md,LICENSE.txt}", File::FNM_DOTMATCH)
+      .select { |path| File.file?(path) }
+  end
+
   spec.require_paths = [ "lib" ]
 
   spec.add_dependency "faraday", "~> 2.14"

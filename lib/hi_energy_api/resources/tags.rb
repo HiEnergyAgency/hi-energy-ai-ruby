@@ -7,6 +7,8 @@ module HiEnergyApi
         get("/tags", params: params)
       end
 
+      alias search list
+
       def advertisers(id, **params)
         get("/tags/#{id}/advertisers", params: params)
       end

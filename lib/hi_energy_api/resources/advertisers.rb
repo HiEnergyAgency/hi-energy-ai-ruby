@@ -15,6 +15,10 @@ module HiEnergyApi
         get("/advertisers/search_by_domain", params: params.merge(domain: domain))
       end
 
+      def by_domain(domain:, **params)
+        list(domain: domain, **params)
+      end
+
       def contacts(id, **params)
         get("/advertisers/#{id}/contacts", params: params)
       end

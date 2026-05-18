@@ -6,6 +6,7 @@ require_relative "hi_energy_api/version"
 require_relative "hi_energy_api/error"
 require_relative "hi_energy_api/configuration"
 require_relative "hi_energy_api/response"
+require_relative "hi_energy_api/paginator"
 require_relative "hi_energy_api/resource"
 require_relative "hi_energy_api/client"
 
@@ -19,6 +20,10 @@ module HiEnergyApi
 
     def configure(&block)
       Client.configure(&block)
+    end
+
+    def documentation_url
+      Configuration::DOCUMENTATION_URL
     end
   end
 end

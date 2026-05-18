@@ -17,13 +17,15 @@ module HiEnergyApi
       @configuration ||= Configuration.new
     end
 
-    def initialize(api_key: nil, bearer_token: nil, base_url: nil, timeout: nil, user_agent: nil)
+    def initialize(api_key: nil, bearer_token: nil, base_url: nil, app_origin: nil, timeout: nil, user_agent: nil, dry_run: nil)
       @config = self.class.configuration.dup
       @config.api_key = api_key if api_key
       @config.bearer_token = bearer_token if bearer_token
       @config.base_url = base_url if base_url
+      @config.app_origin = app_origin if app_origin
       @config.timeout = timeout if timeout
       @config.user_agent = user_agent if user_agent
+      @config.dry_run = dry_run unless dry_run.nil?
 
       raise ArgumentError, "api_key or bearer_token is required" unless @config.credentials_present?
     end
@@ -44,13 +46,24 @@ module HiEnergyApi
       request(:delete, path, params: params)
     end
 
-    def request(method, path, params: {}, body: nil)
-      response = connection.run_request(method, normalize_path(path), body, nil) do |req|
-        req.params.update(compact_params(params)) if params.any?
-        apply_auth!(req)
-      end
+    def app_get(path, params: {})
+      app_request(:get, path, params: params)
+    end
 
-      handle_response(response)
+    def app_post(path, params: {}, body: nil)
+      app_request(:post, path, params: params, body: body)
+    end
+
+    def request(method, path, params: {}, body: nil)
+      perform_request(api_connection, method, path, params: params, body: body)
+    end
+
+    def app_request(method, path, params: {}, body: nil)
+      perform_request(app_connection, method, path, params: params, body: body)
+    end
+
+    def paginate(path, params: {})
+      Paginator.new(client: self, path: path, params: params)
     end
 
     def tools
@@ -133,10 +146,22 @@ module HiEnergyApi
       @exports ||= Resources::Exports.new(self)
     end
 
+    def mcp
+      @mcp ||= Resources::Mcp.new(self)
+    end
+
     private
 
-    def connection
-      @connection ||= Faraday.new(url: config.base_url) do |faraday|
+    def api_connection
+      @api_connection ||= build_connection(config.base_url)
+    end
+
+    def app_connection
+      @app_connection ||= build_connection(config.app_origin)
+    end
+
+    def build_connection(base_url)
+      Faraday.new(url: base_url) do |faraday|
         faraday.request :json
         faraday.response :json, content_type: /\bjson$/
         faraday.options.timeout = config.timeout
@@ -145,6 +170,15 @@ module HiEnergyApi
         faraday.headers["User-Agent"] = config.user_agent
         faraday.adapter Faraday.default_adapter
       end
+    end
+
+    def perform_request(connection, method, path, params: {}, body: nil)
+      response = connection.run_request(method, normalize_path(path), body, nil) do |req|
+        req.params.update(compact_params(params)) if params.any? || config.dry_run
+        apply_auth!(req)
+      end
+
+      handle_response(response)
     end
 
     def apply_auth!(req)
@@ -160,11 +194,14 @@ module HiEnergyApi
     end
 
     def compact_params(params)
-      params.each_with_object({}) do |(key, value), memo|
+      merged = params.each_with_object({}) do |(key, value), memo|
         next if value.nil?
 
         memo[key] = value
       end
+
+      merged[:dry_run] = true if config.dry_run && !merged.key?(:dry_run) && !merged.key?("dry_run")
+      merged
     end
 
     def handle_response(response)
