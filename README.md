@@ -15,7 +15,7 @@ Use this gem to integrate Hi Energy AI into Ruby on Rails apps, background jobs,
 | **API base URL** | `https://app.hienergy.ai/api/v1` |
 | **Documentation** | [app.hienergy.ai/api_documentation](https://app.hienergy.ai/api_documentation) |
 | **OpenAPI** | [OpenAPI reference](https://app.hienergy.ai/api_documentation/openapi) |
-| **Repository** | [github.com/HiEnergyAgency/hi_energy_api](https://github.com/HiEnergyAgency/hi_energy_api) |
+| **Repository** | [github.com/HiEnergyAgency/hi-energy-ai-ruby](https://github.com/HiEnergyAgency/hi-energy-ai-ruby) |
 
 ---
 
@@ -308,8 +308,8 @@ Sign in at [app.hienergy.ai](https://app.hienergy.ai) and visit [API Documentati
 ## Development
 
 ```bash
-git clone https://github.com/HiEnergyAgency/hi_energy_api.git
-cd hi_energy_api
+git clone https://github.com/HiEnergyAgency/hi-energy-ai-ruby.git
+cd hi-energy-ai-ruby
 bundle install
 bundle exec rspec
 ```
@@ -327,7 +327,7 @@ bin/console
 - [Hi Energy AI API Documentation](https://app.hienergy.ai/api_documentation) — full endpoint reference and playground
 - [OpenAPI / Swagger](https://app.hienergy.ai/api_documentation/openapi)
 - [RubyGems: hi_energy_ai](https://rubygems.org/gems/hi_energy_ai)
-- [GitHub: HiEnergyAgency/hi_energy_api](https://github.com/HiEnergyAgency/hi_energy_api)
+- [GitHub: HiEnergyAgency/hi-energy-ai-ruby](https://github.com/HiEnergyAgency/hi-energy-ai-ruby)
 - [CHANGELOG](CHANGELOG.md)
 
 ---

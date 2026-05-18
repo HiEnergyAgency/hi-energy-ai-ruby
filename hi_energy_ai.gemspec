@@ -14,14 +14,14 @@ Gem::Specification.new do |spec|
     Covers advertisers, deals, contacts, transactions, reports, universal search,
     MCP bootstrap, and OpenAPI schema discovery. See https://app.hienergy.ai/api_documentation.
   DESC
-  spec.homepage = "https://github.com/HiEnergyAgency/hi_energy_api"
+  spec.homepage = "https://github.com/HiEnergyAgency/hi-energy-ai-ruby"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.2.0"
 
   spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["source_code_uri"] = spec.homepage
   spec.metadata["documentation_uri"] = "https://app.hienergy.ai/api_documentation"
-  spec.metadata["changelog_uri"] = "https://github.com/HiEnergyAgency/hi_energy_ai/blob/main/CHANGELOG.md"
+  spec.metadata["changelog_uri"] = "https://github.com/HiEnergyAgency/hi-energy-ai-ruby/blob/main/CHANGELOG.md"
   spec.metadata["rubygems_mfa_required"] = "true"
 
   spec.files = Dir.chdir(__dir__) do
