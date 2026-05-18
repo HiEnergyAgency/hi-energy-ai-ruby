@@ -7,7 +7,7 @@ RSpec::Core::RakeTask.new(:spec)
 
 desc "Build the gem"
 task :build do
-  sh "gem build hi_energy_api.gemspec"
+  sh "gem build hi_energy_ai.gemspec"
 end
 
 task default: :spec

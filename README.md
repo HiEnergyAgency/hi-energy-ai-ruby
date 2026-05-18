@@ -1,4 +1,4 @@
-# hi_energy_api
+# hi_energy_ai
 
 Official Ruby client for the **[Hi Energy AI API](https://app.hienergy.ai/api_documentation)**.
 
@@ -7,11 +7,11 @@ The API aggregates affiliate data from FlexOffers, CJ, Rakuten, Impact, Awin, Pa
 ## Installation
 
 ```ruby
-gem "hi_energy_api"
+gem "hi_energy_ai"
 ```
 
 ```bash
-gem install hi_energy_api
+gem install hi_energy_ai
 ```
 
 ## Quick start
@@ -19,9 +19,9 @@ gem install hi_energy_api
 Get an API key from [API Documentation → API Key](https://app.hienergy.ai/api_documentation/api_key) (sign-in required).
 
 ```ruby
-require "hi_energy_api"
+require "hi_energy_ai"
 
-client = HiEnergyApi.new(api_key: ENV["HI_ENERGY_API_KEY"])
+client = HiEnergyAi.new(api_key: ENV["HI_ENERGY_API_KEY"])
 
 client.advertisers.list(limit: 5)
 client.deals.list(active: true, country: "US")
@@ -38,13 +38,13 @@ X-Api-Key: YOUR_API_KEY
 ```
 
 ```ruby
-client = HiEnergyApi.new(api_key: "your_integration_key")
+client = HiEnergyAi.new(api_key: "your_integration_key")
 ```
 
 OAuth bearer tokens (signed-in user flows):
 
 ```ruby
-client = HiEnergyApi.new(bearer_token: ENV["AUTH0_ACCESS_TOKEN"])
+client = HiEnergyAi.new(bearer_token: ENV["AUTH0_ACCESS_TOKEN"])
 ```
 
 Legacy `api_key` query parameters are supported by the API but not used by this client.
@@ -52,15 +52,15 @@ Legacy `api_key` query parameters are supported by the API but not used by this 
 ## Configuration
 
 ```ruby
-HiEnergyApi.configure do |config|
+HiEnergyAi.configure do |config|
   config.api_key = ENV["HI_ENERGY_API_KEY"]
-  config.base_url = HiEnergyApi::Configuration::API_BASE_URL
-  config.app_origin = HiEnergyApi::Configuration::APP_ORIGIN
+  config.base_url = HiEnergyAi::Configuration::API_BASE_URL
+  config.app_origin = HiEnergyAi::Configuration::APP_ORIGIN
   config.timeout = 60
   config.dry_run = false
 end
 
-client = HiEnergyApi.new
+client = HiEnergyAi.new
 ```
 
 | Setting | Default | Description |
@@ -75,7 +75,7 @@ client = HiEnergyApi.new
 Local development:
 
 ```ruby
-client = HiEnergyApi.new(
+client = HiEnergyAi.new(
   api_key: ENV["HI_ENERGY_API_KEY"],
   base_url: "http://localhost:3000/api/v1",
   app_origin: "http://localhost:3000"
@@ -140,7 +140,7 @@ end
 Validate request wiring without consuming live data:
 
 ```ruby
-client = HiEnergyApi.new(api_key: key, dry_run: true)
+client = HiEnergyAi.new(api_key: key, dry_run: true)
 client.deals.list(active: true)
 ```
 
@@ -148,7 +148,7 @@ Or per request: `client.deals.list(active: true, dry_run: true)`.
 
 ## Responses and errors
 
-Success responses are `HiEnergyApi::Response` objects:
+Success responses are `HiEnergyAi::Response` objects:
 
 ```ruby
 response = client.advertisers.list(limit: 5)
@@ -157,12 +157,12 @@ response.meta
 response.status
 ```
 
-Errors raise `HiEnergyApi::Error`:
+Errors raise `HiEnergyAi::Error`:
 
 ```ruby
 begin
   client.advertisers.find(999)
-rescue HiEnergyApi::Error => e
+rescue HiEnergyAi::Error => e
   e.code
   e.message
   e.request_id
@@ -184,8 +184,8 @@ Rate limit headers: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-R
 Maintainers with access:
 
 ```bash
-gem build hi_energy_api.gemspec
-gem push hi_energy_api-0.1.0.gem
+gem build hi_energy_ai.gemspec
+gem push hi_energy_ai-0.1.0.gem
 ```
 
 RubyGems MFA is required (`rubygems_mfa_required` in the gemspec).
@@ -208,7 +208,7 @@ bin/console
 
 - [API documentation](https://app.hienergy.ai/api_documentation)
 - [OpenAPI reference](https://app.hienergy.ai/api_documentation/openapi)
-- [Source code](https://github.com/HiEnergyAgency/hi_energy_api)
+- [Source code](https://github.com/HiEnergyAgency/hi_energy_ai)
 
 ## License
 

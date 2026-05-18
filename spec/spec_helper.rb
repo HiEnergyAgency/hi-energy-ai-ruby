@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require "webmock/rspec"
-require "hi_energy_api"
+require "hi_energy_ai"
 
 RSpec.configure do |config|
   config.expect_with :rspec do |expectations|
