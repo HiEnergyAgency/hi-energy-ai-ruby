@@ -14,7 +14,7 @@ Gem::Specification.new do |spec|
     Covers advertisers, deals, contacts, transactions, reports, universal search,
     MCP bootstrap, and OpenAPI schema discovery. See https://app.hienergy.ai/api_documentation.
   DESC
-  spec.homepage = "https://github.com/HiEnergyAgency/hi_energy_ai"
+  spec.homepage = "https://github.com/HiEnergyAgency/hi_energy_api"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.2.0"
 
