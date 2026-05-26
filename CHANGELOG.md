@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- `HiEnergyAi.new` now raises `HiEnergyAi::Error` (with `code: "MISSING_CREDENTIALS"`)
+  instead of `ArgumentError` when neither `api_key` nor `bearer_token` is
+  configured, so a single `rescue HiEnergyAi::Error` catches all SDK
+  failures.
+- Non-JSON error responses (e.g. an HTML 502 from an upstream proxy) are
+  now wrapped as `HiEnergyAi::Error` with the HTTP status and
+  `code: "INVALID_RESPONSE_BODY"` instead of bubbling up a raw
+  `Faraday::ParsingError`.
+
 ## 0.1.0 — 2026-05-18
 
 ### Added
