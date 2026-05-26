@@ -11,12 +11,12 @@ module HiEnergyAi
         get("/publishers/#{id}", params: params)
       end
 
-      def create(attributes = nil, **params)
+      def create(attributes = UNSET, **params)
         body_attrs, query = split_attributes(attributes, params)
         post("/publishers", params: query, body: { publisher: body_attrs })
       end
 
-      def update(id, attributes = nil, **params)
+      def update(id, attributes = UNSET, **params)
         body_attrs, query = split_attributes(attributes, params)
         patch("/publishers/#{id}", params: query, body: { publisher: body_attrs })
       end

@@ -11,7 +11,7 @@ module HiEnergyAi
         get("/exports/#{id}", params: params)
       end
 
-      def create(attributes = nil, **params)
+      def create(attributes = UNSET, **params)
         body_attrs, query = split_attributes(attributes, params)
         post("/exports", params: query, body: body_attrs)
       end

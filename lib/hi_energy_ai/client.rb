@@ -28,7 +28,7 @@ module HiEnergyAi
       # `server_dry_run` is the preferred name; `dry_run` is kept for
       # backwards compatibility. Both only set `?dry_run=true` on the
       # request — the server still receives the call and your key must
-      # be valid. See README "Server dry run" for details.
+      # be valid. See README "Dry run" for details.
       effective_dry_run = server_dry_run.nil? ? dry_run : server_dry_run
       @config.dry_run = effective_dry_run unless effective_dry_run.nil?
 

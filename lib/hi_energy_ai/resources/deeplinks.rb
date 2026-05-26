@@ -3,7 +3,7 @@
 module HiEnergyAi
   module Resources
     class Deeplinks < Resource
-      def generate(attributes = nil, **params)
+      def generate(attributes = UNSET, **params)
         body_attrs, query = split_attributes(attributes, params)
         post("/deeplinks/generate", params: query, body: body_attrs)
       end
