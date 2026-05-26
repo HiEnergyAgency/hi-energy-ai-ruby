@@ -1,5 +1,24 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- `HiEnergyAi.new(server_dry_run: true)` and
+  `Configuration#server_dry_run` as the preferred name for the existing
+  `dry_run` option. The old `dry_run:` keyword still works as an alias.
+  Both only set `?dry_run=true` on the request — the server still
+  receives the call and your key must be valid.
+- Mutating resource methods (`create`, `update`, `generate`, `add`) now
+  accept idiomatic kwargs in addition to the positional Hash:
+  `client.contacts.create(email: "x@y.com")` works the same as
+  `client.contacts.create({ email: "x@y.com" })`.
+
+### Removed
+
+- `HiEnergyAi::Resources::Tags#search` (was a silent alias for `#list`).
+  Use `client.tags.list(...)` directly.
+
 ## 0.1.0 — 2026-05-18
 
 ### Added
