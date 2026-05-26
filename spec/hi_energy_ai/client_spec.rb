@@ -98,6 +98,23 @@ RSpec.describe HiEnergyAi::Client do
     it "requires credentials" do
       expect { described_class.new }.to raise_error(ArgumentError, /api_key or bearer_token/)
     end
+
+    it "accepts environment presets via splat" do
+      preset = HiEnergyAi::Configuration::PRODUCTION
+      c = described_class.new(api_key: api_key, **preset)
+      expect(c.config.base_url).to eq(preset[:base_url])
+      expect(c.config.app_origin).to eq(preset[:app_origin])
+    end
+
+    it "derives app_origin from a custom base_url when none is given" do
+      c = described_class.new(api_key: api_key, base_url: "https://shard.example.com/api/v1")
+      expect(c.config.app_origin).to eq("https://shard.example.com")
+    end
+
+    it "leaves the default app_origin alone when only credentials are supplied" do
+      c = described_class.new(api_key: api_key)
+      expect(c.config.app_origin).to eq(HiEnergyAi::Configuration::APP_ORIGIN)
+    end
   end
 
   describe "dry_run" do

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "json"
+require "uri"
 require "faraday"
 require "faraday/net_http"
 
@@ -22,7 +23,15 @@ module HiEnergyAi
       @config.api_key = api_key if api_key
       @config.bearer_token = bearer_token if bearer_token
       @config.base_url = base_url if base_url
-      @config.app_origin = app_origin if app_origin
+      if app_origin
+        @config.app_origin = app_origin
+      elsif base_url
+        # When a caller overrides `base_url:` (e.g. a regional shard)
+        # but forgets `app_origin:`, derive the app origin from the
+        # base URL so MCP calls — which target `<app_origin>/mcp`, not
+        # `<base_url>/mcp` — don't silently hit a different host.
+        @config.app_origin = derive_app_origin(base_url)
+      end
       @config.timeout = timeout if timeout
       @config.user_agent = user_agent if user_agent
       # `server_dry_run` is the preferred name; `dry_run` is kept for
@@ -196,6 +205,15 @@ module HiEnergyAi
 
     def normalize_path(path)
       path.to_s.delete_prefix("/")
+    end
+
+    def derive_app_origin(base_url)
+      uri = URI.parse(base_url.to_s)
+      return base_url unless uri.scheme && uri.host
+
+      "#{uri.scheme}://#{uri.host}#{uri.port && uri.port != uri.default_port ? ":#{uri.port}" : ""}"
+    rescue URI::InvalidURIError
+      base_url
     end
 
     def compact_params(params)

@@ -7,6 +7,15 @@ module HiEnergyAi
     DOCUMENTATION_URL = "https://app.hienergy.ai/api_documentation"
     DEFAULT_TIMEOUT = 30
 
+    # Environment preset. Spread into `HiEnergyAi.new` so callers don't
+    # have to hard-code hostnames:
+    #
+    #   HiEnergyAi.new(api_key: k, **HiEnergyAi::Configuration::PRODUCTION)
+    PRODUCTION = {
+      app_origin: APP_ORIGIN,
+      base_url: API_BASE_URL
+    }.freeze
+
     attr_accessor :api_key, :bearer_token, :base_url, :app_origin, :timeout, :user_agent, :dry_run
 
     alias_method :server_dry_run, :dry_run

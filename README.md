@@ -31,6 +31,8 @@ Use this gem to integrate Hi Energy AI into Ruby on Rails apps, background jobs,
 - [MCP and AI agent integration](#mcp-and-ai-agent-integration)
 - [Pagination, dry run, and rate limits](#pagination-dry-run-and-rate-limits)
 - [Configuration](#configuration)
+- [Request body envelopes](#request-body-envelopes)
+- [Advertiser lookups: by_domain vs search_by_domain](#advertiser-lookups-by_domain-vs-search_by_domain)
 - [Error handling](#error-handling)
 - [Frequently asked questions](#frequently-asked-questions)
 - [Development](#development)
@@ -222,12 +224,16 @@ client.paginate("/deals", params: { limit: 50 }).each do |page|
 end
 ```
 
-### Dry run
+### Server dry run
 
-Test integration wiring without live data:
+`server_dry_run: true` (and its legacy alias `dry_run: true`) adds
+`?dry_run=true` to every request. **The HTTP request still happens** —
+your API key must be valid and the server is responsible for short-
+circuiting any side effects. If you want a truly offline mode for tests,
+stub HTTP with WebMock or VCR.
 
 ```ruby
-HiEnergyAi.new(api_key: key, dry_run: true).deals.list(active: true)
+HiEnergyAi.new(api_key: key, server_dry_run: true).deals.list(active: true)
 ```
 
 ### Rate limits
@@ -260,7 +266,71 @@ client = HiEnergyAi.new
 | `app_origin` | `https://app.hienergy.ai` |
 | `timeout` | `30` seconds |
 
+### Hosts and environments
+
+The Ruby SDK targets `https://app.hienergy.ai`. For portable code,
+splat the `PRODUCTION` preset instead of hard-coding URLs:
+
+```ruby
+client = HiEnergyAi.new(
+  api_key: ENV["HI_ENERGY_API_KEY"],
+  **HiEnergyAi::Configuration::PRODUCTION
+)
+
+HiEnergyAi::Configuration::PRODUCTION
+# => {:app_origin=>"https://app.hienergy.ai", :base_url=>"https://app.hienergy.ai/api/v1"}
+```
+
+If you pass a custom `base_url:` (for example, a regional shard) **without**
+an `app_origin:`, the SDK now derives `app_origin` from the base URL, so
+MCP calls — which target `<app_origin>/mcp`, **not** `<base_url>/mcp` —
+stay on the same host:
+
+```ruby
+HiEnergyAi.new(api_key: k, base_url: "https://shard.example.com/api/v1")
+# app_origin => "https://shard.example.com"
+```
+
+`HiEnergyAi.configure { ... }` rebinds a process-global default that
+every subsequent `HiEnergyAi.new` inherits. If you need isolated
+configuration (multi-tenant tests, multiple keys per process), pass the
+options directly to `HiEnergyAi.new(...)` and skip `configure`.
+
 ---
+
+## Request body envelopes
+
+Mutating endpoints don't all wrap their attributes the same way on the
+wire. The table below lists the body the SDK actually sends so you can
+match it to the API reference:
+
+| Ruby call | JSON body sent |
+|-----------|----------------|
+| `client.contacts.create(email: "x")` | `{ "contact": { "email": "x" } }` |
+| `client.contacts.add(email: "x")` | `{ "contact": { "email": "x" } }` |
+| `client.publishers.create(name: "x")` | `{ "publisher": { "name": "x" } }` |
+| `client.publishers.update(id, name: "x")` | `{ "publisher": { "name": "x" } }` |
+| `client.users.create(email: "x")` | `{ "user": { "email": "x" } }` |
+| `client.users.update(id, email: "x")` | `{ "user": { "email": "x" } }` |
+| `client.deeplinks.generate(url: "x")` | `{ "url": "x" }` (no envelope) |
+| `client.exports.create(resource: "x")` | `{ "resource": "x" }` (no envelope) |
+
+All mutating methods accept either keyword arguments
+(`create(email: "x")`) or a positional Hash (`create({ email: "x" })`);
+the two forms are equivalent.
+
+## Advertiser lookups: `by_domain` vs `search_by_domain`
+
+The SDK exposes two ways to look up an advertiser by website domain
+because the API exposes two endpoints:
+
+| Method | Endpoint | When to use |
+|--------|----------|-------------|
+| `client.advertisers.by_domain(domain: "nike.com")` | `GET /advertisers?domain=nike.com` | Default. Returns the same paginated list-shape as `advertisers.list`. |
+| `client.advertisers.search_by_domain(domain: "nike.com")` | `GET /advertisers/search_by_domain?domain=nike.com` | Dedicated lookup endpoint. Same data, different response shape. |
+
+Prefer `by_domain` unless you have a specific reason to hit the
+dedicated endpoint.
 
 ## Error handling
 
@@ -290,7 +360,7 @@ This repository is the **official Ruby gem**. Other languages can use the REST A
 ### How do I search advertisers by website domain?
 
 ```ruby
-client.advertisers.by_domain("amazon.com")
+client.advertisers.by_domain(domain: "amazon.com")
 # or
 client.advertisers.search_by_domain(domain: "amazon.com")
 ```

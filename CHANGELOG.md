@@ -13,6 +13,19 @@
   accept idiomatic kwargs in addition to the positional Hash:
   `client.contacts.create(email: "x@y.com")` works the same as
   `client.contacts.create({ email: "x@y.com" })`.
+- `HiEnergyAi::Configuration::PRODUCTION` environment preset. Splat into
+  `HiEnergyAi.new(api_key: k, **HiEnergyAi::Configuration::PRODUCTION)`
+  for portable code that doesn't hard-code hostnames.
+- README sections covering hosts, request body envelopes, and the
+  `by_domain` vs `search_by_domain` advertiser lookups.
+
+### Changed
+
+- When `base_url:` is overridden without `app_origin:`, the SDK now
+  derives `app_origin` from the base URL (stripping the API path)
+  instead of leaving it pointed at the default host. This keeps MCP
+  calls — which target `<app_origin>/mcp`, not `<base_url>/mcp` — on
+  the same host as the rest of the client.
 
 ### Removed
 
