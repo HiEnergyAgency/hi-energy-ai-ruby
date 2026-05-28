@@ -32,7 +32,9 @@ module HiEnergyAi
       effective_dry_run = server_dry_run.nil? ? dry_run : server_dry_run
       @config.dry_run = effective_dry_run unless effective_dry_run.nil?
 
-      raise ArgumentError, "api_key or bearer_token is required" unless @config.credentials_present?
+      unless @config.credentials_present?
+        raise Error.new("api_key or bearer_token is required", code: "MISSING_CREDENTIALS")
+      end
     end
 
     def get(path, params: {})
@@ -184,6 +186,22 @@ module HiEnergyAi
       end
 
       handle_response(response)
+    rescue Faraday::ParsingError => e
+      status, raw_body = extract_parsing_error_context(e)
+      message = status ? "API request failed with status #{status}" : "Failed to parse API response"
+      raise Error.new(message, status: status, code: "INVALID_RESPONSE_BODY", response_body: raw_body)
+    end
+
+    def extract_parsing_error_context(error)
+      env = error.response
+      case env
+      when Hash
+        [env[:status], env[:body]]
+      when Faraday::Response
+        [env.status, env.body]
+      else
+        [nil, nil]
+      end
     end
 
     def apply_auth!(req)
