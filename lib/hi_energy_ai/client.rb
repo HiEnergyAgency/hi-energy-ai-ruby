@@ -17,7 +17,7 @@ module HiEnergyAi
       @configuration ||= Configuration.new
     end
 
-    def initialize(api_key: nil, bearer_token: nil, base_url: nil, app_origin: nil, timeout: nil, user_agent: nil, dry_run: nil)
+    def initialize(api_key: nil, bearer_token: nil, base_url: nil, app_origin: nil, timeout: nil, user_agent: nil, dry_run: nil, server_dry_run: nil)
       @config = self.class.configuration.dup
       @config.api_key = api_key if api_key
       @config.bearer_token = bearer_token if bearer_token
@@ -25,7 +25,12 @@ module HiEnergyAi
       @config.app_origin = app_origin if app_origin
       @config.timeout = timeout if timeout
       @config.user_agent = user_agent if user_agent
-      @config.dry_run = dry_run unless dry_run.nil?
+      # `server_dry_run` is the preferred name; `dry_run` is kept for
+      # backwards compatibility. Both only set `?dry_run=true` on the
+      # request — the server still receives the call and your key must
+      # be valid. See README "Dry run" for details.
+      effective_dry_run = server_dry_run.nil? ? dry_run : server_dry_run
+      @config.dry_run = effective_dry_run unless effective_dry_run.nil?
 
       unless @config.credentials_present?
         raise Error.new("api_key or bearer_token is required", code: "MISSING_CREDENTIALS")
