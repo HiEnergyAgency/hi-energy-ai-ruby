@@ -1,0 +1,67 @@
+plugins:
+  - rubocop-rspec
+
+AllCops:
+  TargetRubyVersion: 3.2
+  NewCops: enable
+  SuggestExtensions: false
+  Exclude:
+    - "bin/**/*"
+    - "vendor/**/*"
+    - "*.gem"
+
+# This is a thin API client; a few methods and files are naturally longer
+# or more branchy than the defaults without being genuinely complex.
+Metrics/MethodLength:
+  Max: 25
+Metrics/AbcSize:
+  Max: 25
+Metrics/ClassLength:
+  Max: 200
+Metrics/ParameterLists:
+  Max: 8
+Metrics/CyclomaticComplexity:
+  Max: 10
+Metrics/PerceivedComplexity:
+  Max: 10
+
+# Development dependencies are intentionally declared in the gemspec so the
+# gem is self-describing for contributors.
+Gemspec/DevelopmentDependencies:
+  Enabled: false
+
+# Documentation lives in the README rather than per-class comments.
+Style/Documentation:
+  Enabled: false
+
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+Style/StringLiteralsInInterpolation:
+  EnforcedStyle: double_quotes
+
+Layout/LineLength:
+  Max: 120
+
+# `q` mirrors the API's documented query parameter; `id` is a resource key.
+Naming/MethodParameterName:
+  AllowedNames:
+    - q
+    - id
+    - to
+    - io
+
+# `has_more?` is part of the public Response API and matches the API's meta key.
+Naming/PredicatePrefix:
+  AllowedMethods:
+    - has_more?
+
+# Spec file names are descriptive; enforcing 1:1 path-to-class mapping adds
+# churn without improving clarity for this small suite.
+RSpec/SpecFilePathFormat:
+  Enabled: false
+RSpec/ExampleLength:
+  Enabled: false
+RSpec/MultipleExpectations:
+  Enabled: false
+RSpec/NestedGroups:
+  Max: 4

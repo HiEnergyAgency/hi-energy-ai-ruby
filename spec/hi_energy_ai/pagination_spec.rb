@@ -13,7 +13,7 @@ RSpec.describe HiEnergyAi::Paginator do
       .to_return(
         status: 200,
         headers: { "Content-Type" => "application/json" },
-        body: { data: [ { id: 1 } ], meta: { next_page: 2, has_more: true } }.to_json
+        body: { data: [{ id: 1 }], meta: { next_page: 2, has_more: true } }.to_json
       )
 
     stub_request(:get, "#{base_url}/deals")
@@ -21,11 +21,11 @@ RSpec.describe HiEnergyAi::Paginator do
       .to_return(
         status: 200,
         headers: { "Content-Type" => "application/json" },
-        body: { data: [ { id: 2 } ], meta: { next_page: nil, has_more: false } }.to_json
+        body: { data: [{ id: 2 }], meta: { next_page: nil, has_more: false } }.to_json
       )
 
     pages = client.paginate("/deals", params: { limit: 2 }).map(&:data)
 
-    expect(pages).to eq([ [ { "id" => 1 } ], [ { "id" => 2 } ] ])
+    expect(pages).to eq([[{ "id" => 1 }], [{ "id" => 2 }]])
   end
 end

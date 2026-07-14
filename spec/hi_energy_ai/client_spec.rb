@@ -14,7 +14,7 @@ RSpec.describe HiEnergyAi::Client do
         .to_return(
           status: 200,
           headers: { "Content-Type" => "application/json" },
-          body: { data: [ { id: "1", type: "advertiser" } ], meta: { limit: 25 } }.to_json
+          body: { data: [{ id: "1", type: "advertiser" }], meta: { limit: 25 } }.to_json
         )
 
       response = client.advertisers.list(limit: 5)
@@ -97,7 +97,7 @@ RSpec.describe HiEnergyAi::Client do
   describe "initialization" do
     it "requires credentials and raises HiEnergyAi::Error" do
       expect { described_class.new }.to raise_error(HiEnergyAi::Error) do |error|
-        expect(error.message).to match(/api_key or bearer_token/)
+        expect(error.message).to include("api_key or bearer_token")
         expect(error.code).to eq("MISSING_CREDENTIALS")
       end
     end
@@ -115,7 +115,7 @@ RSpec.describe HiEnergyAi::Client do
       expect { client.advertisers.list }.to raise_error(HiEnergyAi::Error) do |error|
         expect(error.status).to eq(502)
         expect(error.code).to eq("INVALID_RESPONSE_BODY")
-        expect(error.message).to match(/status 502/)
+        expect(error.message).to include("status 502")
       end
     end
   end

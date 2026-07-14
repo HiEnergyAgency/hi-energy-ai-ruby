@@ -1,8 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 IFS=$'\n\t'
-set -vx
 
+cd "$(dirname "$0")/.."
+
+echo "Installing dependencies..."
 bundle install
 
-# Do any other automated setup that you need to do here
+echo ""
+echo "Setup complete. Common commands:"
+echo "  bin/console          # interactive REPL with the gem loaded"
+echo "  bundle exec rspec    # run the test suite"
+echo "  bundle exec rubocop  # run the linter"
+echo "  bundle exec rake     # run specs + rubocop"

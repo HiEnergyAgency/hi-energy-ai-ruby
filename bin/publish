@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+echo "Running specs..."
+bundle exec rspec
+
+echo "Building gem..."
+gem build hi_energy_ai.gemspec
+
+version=$(ruby -r ./lib/hi_energy_ai/version -e 'print HiEnergyAi::VERSION')
+gem_file="hi_energy_ai-${version}.gem"
+
+echo "Pushing ${gem_file} to RubyGems..."
+gem push "${gem_file}"
+
+echo ""
+echo "Published: https://rubygems.org/gems/hi_energy_ai"
+echo "Install:   gem install hi_energy_ai"

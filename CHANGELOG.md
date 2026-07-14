@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.1.1 — 2026-07-14
 
 ### Added
 
@@ -13,6 +13,9 @@
   accept idiomatic kwargs in addition to the positional Hash:
   `client.contacts.create(email: "x@y.com")` works the same as
   `client.contacts.create({ email: "x@y.com" })`.
+- `bin/publish` release workflow script.
+- RuboCop linting (`bundle exec rubocop`), a combined `rake` task
+  (specs + lint), an `.rspec` config, and a RuboCop step in CI.
 
 ### Changed
 
@@ -24,6 +27,9 @@
   now wrapped as `HiEnergyAi::Error` with the HTTP status and
   `code: "INVALID_RESPONSE_BODY"` instead of bubbling up a raw
   `Faraday::ParsingError`.
+- Rewrote the README with a complete Ruby resource reference plus
+  response, pagination, configuration, and error-handling documentation
+  aligned with the current client, and updated repository metadata URLs.
 
 ### Removed
 
