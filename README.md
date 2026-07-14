@@ -15,7 +15,7 @@ Use this gem to integrate Hi Energy AI into Ruby on Rails apps, background jobs,
 | **API base URL** | `https://app.hienergy.ai/api/v1` |
 | **Documentation** | [app.hienergy.ai/api_documentation](https://app.hienergy.ai/api_documentation) |
 | **OpenAPI** | [OpenAPI reference](https://app.hienergy.ai/api_documentation/openapi) |
-| **Repository** | [github.com/HiEnergyAgency/hi-energy-ai-ruby](https://github.com/HiEnergyAgency/hi-energy-ai-ruby) |
+| **Repository** | [github.com/HiEnergyAgency/hi_energy_api](https://github.com/HiEnergyAgency/hi_energy_api) |
 
 ---
 
@@ -26,7 +26,7 @@ Use this gem to integrate Hi Energy AI into Ruby on Rails apps, background jobs,
 - [Installation](#installation)
 - [Quick start](#quick-start)
 - [Authentication](#authentication)
-- [API endpoints covered](#api-endpoints-covered)
+- [Ruby resource reference](#ruby-resource-reference)
 - [Affiliate networks and data sources](#affiliate-networks-and-data-sources)
 - [MCP and AI agent integration](#mcp-and-ai-agent-integration)
 - [Pagination, dry run, and rate limits](#pagination-dry-run-and-rate-limits)
@@ -144,35 +144,52 @@ Get your key: [API Documentation → API Key](https://app.hienergy.ai/api_docume
 
 ---
 
-## API endpoints covered
+## Ruby resource reference
 
-Every method maps to the [API playground](https://app.hienergy.ai/api_documentation):
+All optional keyword arguments are sent as query parameters. Methods that accept
+`attributes` send JSON request bodies.
 
-| Ruby client | HTTP | Use case |
-|-------------|------|----------|
-| `search` | `GET /api/v1/search` | Universal Searchkick search |
-| `deals` | `GET /api/v1/deals` | List and filter affiliate deals / coupons |
-| `advertisers` | `GET /api/v1/advertisers` | Advertiser discovery and filters |
-| `advertisers.search_by_domain` | `GET /api/v1/advertisers/search_by_domain` | Lookup by domain |
-| `advertisers.by_domain` | `GET /api/v1/advertisers?domain=` | Domain filter shorthand |
-| `contacts` | `GET`, `POST /api/v1/contacts` | Contact search and create |
-| `transactions` | `GET /api/v1/transactions` | Affiliate sales and commissions |
-| `clicks` | `GET /api/v1/clicks` | Click-level reporting (date range required) |
-| `opportunities` | `GET /api/v1/opportunities` | Publisher opportunity advertisers |
-| `verticals` | `GET /api/v1/verticals` | Industry / category list |
-| `tags` | `GET /api/v1/tags` | Tag search and tagged advertisers |
-| `publishers` | CRUD `/api/v1/publishers` | Publisher accounts and credentials |
-| `agencies` | `GET /api/v1/agencies` | Agency directory |
-| `networks` | `GET /api/v1/networks` | Affiliate network list |
-| `reports` | `GET /api/v1/reports` | Prebuilt analytics reports |
-| `users` | `/api/v1/users` | Scoped user management |
-| `status_changes` | `GET /api/v1/status_changes` | Advertiser approval history |
-| `deeplinks` | `POST /api/v1/deeplinks/generate` | Tracking link generator |
-| `domains` | `GET /api/v1/domains/search` | Domain search |
-| `tools` | `GET /api/v1/tools` | MCP tool catalog (JSON Schema) |
-| `schema` | `GET /api/v1/schema` | OpenAPI 3.0 download |
-| `exports` | `/api/v1/exports` | Async report exports |
-| `mcp` | `GET`, `POST /mcp` | MCP bootstrap and JSON-RPC |
+| Resource | Methods |
+|----------|---------|
+| `client.search` | `query(q:, **params)` |
+| `client.advertisers` | `list`, `find(id)`, `search_by_domain(domain:)`, `by_domain(domain:)`, `contacts(id)`, `similar(id)`, `related(id)`, `find_more_contacts(id)` |
+| `client.deals` | `list`, `find(id)`, `types`, `translate(id)` |
+| `client.contacts` | `list`, `create(attributes)`, `add(attributes)` |
+| `client.transactions` | `list`, `find(id)` |
+| `client.clicks` | `list(start_date:, end_date:, **params)` |
+| `client.opportunities` | `list` |
+| `client.reports` | `list`, `find(id)` |
+| `client.publishers` | `list`, `find(id)`, `create(attributes)`, `update(id, attributes)`, `find_linkedin_users(id)` |
+| `client.agencies` | `list`, `find(id)` |
+| `client.networks` | `list`, `find(id)` |
+| `client.status_changes` | `list` |
+| `client.tags` | `list`, `advertisers(id)` |
+| `client.users` | `list`, `find(id)`, `create(attributes)`, `update(id, attributes)`, `resend_invitation(id)`, `rotate_api_key(id)` |
+| `client.verticals` | `list` |
+| `client.domains` | `search(domain:)` |
+| `client.deeplinks` | `generate(attributes)` |
+| `client.exports` | `list`, `find(id)`, `create(attributes)` |
+| `client.tools` | `list` |
+| `client.schema` | `fetch` |
+| `client.mcp` | `bootstrap`, `integration`, `initialize_session`, `call(method, params: {})` |
+
+Examples:
+
+```ruby
+client.advertisers.search_by_domain(domain: "example.com", limit: 10)
+client.clicks.list(start_date: "2026-07-01", end_date: "2026-07-13")
+client.publishers.create({ name: "Example Publisher", website: "https://example.com" })
+client.deeplinks.generate({ url: "https://merchant.example/product" })
+```
+
+For endpoint-specific filters and request attributes, use the
+[API playground](https://app.hienergy.ai/api_documentation) or fetch the
+current OpenAPI document:
+
+```ruby
+openapi = client.schema.fetch
+openapi.body
+```
 
 ---
 
@@ -222,6 +239,20 @@ client.paginate("/deals", params: { limit: 50 }).each do |page|
 end
 ```
 
+Every successful request returns a `HiEnergyAi::Response`:
+
+```ruby
+response = client.deals.list(limit: 10)
+
+response.success? # true for HTTP 2xx
+response.status   # HTTP status
+response.headers  # response headers
+response.body     # complete parsed JSON
+response.data     # the top-level "data" value
+response.meta     # the top-level "meta" value
+response.to_h     # normalized response hash
+```
+
 ### Dry run
 
 Test integration wiring without live data:
@@ -260,6 +291,26 @@ client = HiEnergyAi.new
 | `app_origin` | `https://app.hienergy.ai` |
 | `timeout` | `30` seconds |
 
+Constructor options override global configuration for one client:
+
+```ruby
+client = HiEnergyAi.new(
+  api_key: ENV.fetch("HI_ENERGY_API_KEY"),
+  timeout: 60,
+  user_agent: "my-app/1.0"
+)
+```
+
+For an endpoint without a resource helper, use the low-level client methods.
+Paths are relative to `base_url`:
+
+```ruby
+client.get("/advertisers", params: { limit: 5 })
+client.post("/exports", body: { report: "transactions" })
+client.patch("/publishers/42", body: { publisher: { name: "New name" } })
+client.delete("/custom_resource/42")
+```
+
 ---
 
 ## Error handling
@@ -268,10 +319,12 @@ client = HiEnergyAi.new
 begin
   client.advertisers.find(999)
 rescue HiEnergyAi::Error => e
-  e.code          # API error code
-  e.message       # Human-readable message
-  e.request_id    # Support / debugging
   e.status        # HTTP status
+  e.code          # API error code
+  e.message       # human-readable message
+  e.request_id    # support/debugging request ID
+  e.details       # optional structured error details
+  e.response_body # parsed or raw response body
 end
 ```
 
@@ -290,7 +343,7 @@ This repository is the **official Ruby gem**. Other languages can use the REST A
 ### How do I search advertisers by website domain?
 
 ```ruby
-client.advertisers.by_domain("amazon.com")
+client.advertisers.by_domain(domain: "amazon.com")
 # or
 client.advertisers.search_by_domain(domain: "amazon.com")
 ```
@@ -305,20 +358,11 @@ Sign in at [app.hienergy.ai](https://app.hienergy.ai) and visit [API Documentati
 
 ---
 
-## Contributing
-
-We welcome bug reports, feature requests, and pull requests.
-
-- **Report an issue:** [github.com/HiEnergyAgency/hi-energy-ai-ruby/issues/new/choose](https://github.com/HiEnergyAgency/hi-energy-ai-ruby/issues/new/choose)
-- **Submit a pull request:** fork the repo, branch from `main`, run `bundle exec rspec`, then open a PR — see [CONTRIBUTING.md](CONTRIBUTING.md) for the full workflow
-
----
-
 ## Development
 
 ```bash
-git clone https://github.com/HiEnergyAgency/hi-energy-ai-ruby.git
-cd hi-energy-ai-ruby
+git clone https://github.com/HiEnergyAgency/hi_energy_api.git
+cd hi_energy_api
 bundle install
 bundle exec rspec
 ```
@@ -329,6 +373,15 @@ Interactive console:
 bin/console
 ```
 
+To run the checks, build the gem, and publish the current version to RubyGems:
+
+```bash
+bin/publish
+```
+
+Publishing requires an authenticated RubyGems account with MFA. Update
+`HiEnergyAi::VERSION` and `CHANGELOG.md` before publishing a new release.
+
 ---
 
 ## Related links
@@ -336,7 +389,7 @@ bin/console
 - [Hi Energy AI API Documentation](https://app.hienergy.ai/api_documentation) — full endpoint reference and playground
 - [OpenAPI / Swagger](https://app.hienergy.ai/api_documentation/openapi)
 - [RubyGems: hi_energy_ai](https://rubygems.org/gems/hi_energy_ai)
-- [GitHub: HiEnergyAgency/hi-energy-ai-ruby](https://github.com/HiEnergyAgency/hi-energy-ai-ruby)
+- [GitHub: HiEnergyAgency/hi_energy_api](https://github.com/HiEnergyAgency/hi_energy_api)
 - [CHANGELOG](CHANGELOG.md)
 
 ---
