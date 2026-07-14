@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.1.1 — 2026-07-14
+
+### Changed
+
+- Rewrote the README with a complete Ruby resource reference, response, pagination, configuration, and error-handling documentation aligned with the current client
+- Documented per-client configuration overrides and low-level `get`/`post`/`patch`/`delete` helpers
+- Updated repository metadata URLs
+
+### Added
+
+- `bin/publish` release workflow script
+
 ## 0.1.0 — 2026-05-18
 
 ### Added
