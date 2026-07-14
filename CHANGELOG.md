@@ -2,15 +2,37 @@
 
 ## 0.1.1 — 2026-07-14
 
-### Changed
-
-- Rewrote the README with a complete Ruby resource reference, response, pagination, configuration, and error-handling documentation aligned with the current client
-- Documented per-client configuration overrides and low-level `get`/`post`/`patch`/`delete` helpers
-- Updated repository metadata URLs
-
 ### Added
 
-- `bin/publish` release workflow script
+- `HiEnergyAi.new(server_dry_run: true)` and
+  `Configuration#server_dry_run` as the preferred name for the existing
+  `dry_run` option. The old `dry_run:` keyword still works as an alias.
+  Both only set `?dry_run=true` on the request — the server still
+  receives the call and your key must be valid.
+- Mutating resource methods (`create`, `update`, `generate`, `add`) now
+  accept idiomatic kwargs in addition to the positional Hash:
+  `client.contacts.create(email: "x@y.com")` works the same as
+  `client.contacts.create({ email: "x@y.com" })`.
+- `bin/publish` release workflow script.
+
+### Changed
+
+- `HiEnergyAi.new` now raises `HiEnergyAi::Error` (with `code: "MISSING_CREDENTIALS"`)
+  instead of `ArgumentError` when neither `api_key` nor `bearer_token` is
+  configured, so a single `rescue HiEnergyAi::Error` catches all SDK
+  failures.
+- Non-JSON error responses (e.g. an HTML 502 from an upstream proxy) are
+  now wrapped as `HiEnergyAi::Error` with the HTTP status and
+  `code: "INVALID_RESPONSE_BODY"` instead of bubbling up a raw
+  `Faraday::ParsingError`.
+- Rewrote the README with a complete Ruby resource reference plus
+  response, pagination, configuration, and error-handling documentation
+  aligned with the current client, and updated repository metadata URLs.
+
+### Removed
+
+- `HiEnergyAi::Resources::Tags#search` (was a silent alias for `#list`).
+  Use `client.tags.list(...)` directly.
 
 ## 0.1.0 — 2026-05-18
 

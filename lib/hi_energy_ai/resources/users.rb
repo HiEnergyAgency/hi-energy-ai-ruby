@@ -11,12 +11,14 @@ module HiEnergyAi
         get("/users/#{id}", params: params)
       end
 
-      def create(attributes, **params)
-        post("/users", params: params, body: { user: attributes })
+      def create(attributes = UNSET, **params)
+        body_attrs, query = split_attributes(attributes, params)
+        post("/users", params: query, body: { user: body_attrs })
       end
 
-      def update(id, attributes, **params)
-        patch("/users/#{id}", params: params, body: { user: attributes })
+      def update(id, attributes = UNSET, **params)
+        body_attrs, query = split_attributes(attributes, params)
+        patch("/users/#{id}", params: query, body: { user: body_attrs })
       end
 
       def resend_invitation(id, **params)

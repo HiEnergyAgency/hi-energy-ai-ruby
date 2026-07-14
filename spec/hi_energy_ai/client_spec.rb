@@ -95,8 +95,28 @@ RSpec.describe HiEnergyAi::Client do
   end
 
   describe "initialization" do
-    it "requires credentials" do
-      expect { described_class.new }.to raise_error(ArgumentError, /api_key or bearer_token/)
+    it "requires credentials and raises HiEnergyAi::Error" do
+      expect { described_class.new }.to raise_error(HiEnergyAi::Error) do |error|
+        expect(error.message).to match(/api_key or bearer_token/)
+        expect(error.code).to eq("MISSING_CREDENTIALS")
+      end
+    end
+  end
+
+  describe "non-JSON error responses" do
+    it "wraps Faraday::ParsingError as HiEnergyAi::Error with status" do
+      stub_request(:get, "#{base_url}/advertisers")
+        .to_return(
+          status: 502,
+          headers: { "Content-Type" => "application/json" },
+          body: "<html>bad gateway</html>"
+        )
+
+      expect { client.advertisers.list }.to raise_error(HiEnergyAi::Error) do |error|
+        expect(error.status).to eq(502)
+        expect(error.code).to eq("INVALID_RESPONSE_BODY")
+        expect(error.message).to match(/status 502/)
+      end
     end
   end
 
@@ -113,6 +133,44 @@ RSpec.describe HiEnergyAi::Client do
         )
 
       expect(dry_client.deals.list).to be_success
+    end
+
+    it "accepts the preferred `server_dry_run:` alias" do
+      dry_client = described_class.new(api_key: api_key, base_url: base_url, server_dry_run: true)
+
+      stub_request(:get, "#{base_url}/deals")
+        .with(query: hash_including("dry_run" => "true"))
+        .to_return(status: 200, headers: { "Content-Type" => "application/json" }, body: "{}")
+
+      expect(dry_client.deals.list).to be_success
+      expect(dry_client.config.server_dry_run).to be(true)
+    end
+  end
+
+  describe "mutating resources" do
+    let(:body_matcher) { ->(req) { JSON.parse(req.body) == { "contact" => { "email" => "x@y.com" } } } }
+
+    it "accepts keyword-style attributes on create" do
+      stub_request(:post, "#{base_url}/contacts")
+        .with(&body_matcher)
+        .to_return(status: 201, headers: { "Content-Type" => "application/json" }, body: { data: { id: "1" } }.to_json)
+
+      expect(client.contacts.create(email: "x@y.com")).to be_success
+    end
+
+    it "still accepts a positional Hash on create (backwards compat)" do
+      stub_request(:post, "#{base_url}/contacts")
+        .with(&body_matcher)
+        .with(query: hash_including("foo" => "bar"))
+        .to_return(status: 201, headers: { "Content-Type" => "application/json" }, body: { data: { id: "1" } }.to_json)
+
+      expect(client.contacts.create({ email: "x@y.com" }, foo: "bar")).to be_success
+    end
+  end
+
+  describe "Tags resource" do
+    it "no longer exposes #search (use #list)" do
+      expect(client.tags).not_to respond_to(:search)
     end
   end
 end

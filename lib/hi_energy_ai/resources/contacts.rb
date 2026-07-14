@@ -7,12 +7,14 @@ module HiEnergyAi
         get("/contacts", params: params)
       end
 
-      def create(attributes, **params)
-        post("/contacts", params: params, body: { contact: attributes })
+      def create(attributes = UNSET, **params)
+        body_attrs, query = split_attributes(attributes, params)
+        post("/contacts", params: query, body: { contact: body_attrs })
       end
 
-      def add(attributes, **params)
-        post("/contacts/add", params: params, body: { contact: attributes })
+      def add(attributes = UNSET, **params)
+        body_attrs, query = split_attributes(attributes, params)
+        post("/contacts/add", params: query, body: { contact: body_attrs })
       end
     end
   end

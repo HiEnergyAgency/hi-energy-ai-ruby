@@ -178,8 +178,13 @@ Examples:
 ```ruby
 client.advertisers.search_by_domain(domain: "example.com", limit: 10)
 client.clicks.list(start_date: "2026-07-01", end_date: "2026-07-13")
+
+# Mutating methods accept idiomatic keyword arguments...
+client.publishers.create(name: "Example Publisher", website: "https://example.com")
+client.deeplinks.generate(url: "https://merchant.example/product")
+
+# ...or a positional Hash (equivalent, useful for dynamic payloads):
 client.publishers.create({ name: "Example Publisher", website: "https://example.com" })
-client.deeplinks.generate({ url: "https://merchant.example/product" })
 ```
 
 For endpoint-specific filters and request attributes, use the
@@ -255,9 +260,15 @@ response.to_h     # normalized response hash
 
 ### Dry run
 
-Test integration wiring without live data:
+Add `?dry_run=true` to every request. The server still receives the call and
+your key must be valid — it validates request wiring without treating the call
+as production traffic. `server_dry_run:` is the preferred keyword; `dry_run:`
+remains as an alias.
 
 ```ruby
+HiEnergyAi.new(api_key: key, server_dry_run: true).deals.list(active: true)
+
+# Equivalent (legacy alias):
 HiEnergyAi.new(api_key: key, dry_run: true).deals.list(active: true)
 ```
 
@@ -315,6 +326,9 @@ client.delete("/custom_resource/42")
 
 ## Error handling
 
+Every failure — HTTP errors, missing credentials, and unparseable responses —
+raises `HiEnergyAi::Error`, so a single `rescue` catches all SDK failures.
+
 ```ruby
 begin
   client.advertisers.find(999)
@@ -327,6 +341,14 @@ rescue HiEnergyAi::Error => e
   e.response_body # parsed or raw response body
 end
 ```
+
+Notable error codes:
+
+| `e.code` | When |
+|----------|------|
+| `MISSING_CREDENTIALS` | `HiEnergyAi.new` was called without `api_key` or `bearer_token` |
+| `INVALID_RESPONSE_BODY` | The server returned a non-JSON body (e.g. an HTML 502 from a proxy) |
+| API-provided codes (`NOT_FOUND`, …) | Returned in the JSON error payload |
 
 ---
 

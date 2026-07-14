@@ -17,7 +17,7 @@ module HiEnergyAi
       @configuration ||= Configuration.new
     end
 
-    def initialize(api_key: nil, bearer_token: nil, base_url: nil, app_origin: nil, timeout: nil, user_agent: nil, dry_run: nil)
+    def initialize(api_key: nil, bearer_token: nil, base_url: nil, app_origin: nil, timeout: nil, user_agent: nil, dry_run: nil, server_dry_run: nil)
       @config = self.class.configuration.dup
       @config.api_key = api_key if api_key
       @config.bearer_token = bearer_token if bearer_token
@@ -25,9 +25,16 @@ module HiEnergyAi
       @config.app_origin = app_origin if app_origin
       @config.timeout = timeout if timeout
       @config.user_agent = user_agent if user_agent
-      @config.dry_run = dry_run unless dry_run.nil?
+      # `server_dry_run` is the preferred name; `dry_run` is kept for
+      # backwards compatibility. Both only set `?dry_run=true` on the
+      # request — the server still receives the call and your key must
+      # be valid. See README "Dry run" for details.
+      effective_dry_run = server_dry_run.nil? ? dry_run : server_dry_run
+      @config.dry_run = effective_dry_run unless effective_dry_run.nil?
 
-      raise ArgumentError, "api_key or bearer_token is required" unless @config.credentials_present?
+      unless @config.credentials_present?
+        raise Error.new("api_key or bearer_token is required", code: "MISSING_CREDENTIALS")
+      end
     end
 
     def get(path, params: {})
@@ -179,6 +186,22 @@ module HiEnergyAi
       end
 
       handle_response(response)
+    rescue Faraday::ParsingError => e
+      status, raw_body = extract_parsing_error_context(e)
+      message = status ? "API request failed with status #{status}" : "Failed to parse API response"
+      raise Error.new(message, status: status, code: "INVALID_RESPONSE_BODY", response_body: raw_body)
+    end
+
+    def extract_parsing_error_context(error)
+      env = error.response
+      case env
+      when Hash
+        [env[:status], env[:body]]
+      when Faraday::Response
+        [env.status, env.body]
+      else
+        [nil, nil]
+      end
     end
 
     def apply_auth!(req)

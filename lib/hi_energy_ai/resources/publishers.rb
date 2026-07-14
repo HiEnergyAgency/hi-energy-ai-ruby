@@ -11,12 +11,14 @@ module HiEnergyAi
         get("/publishers/#{id}", params: params)
       end
 
-      def create(attributes, **params)
-        post("/publishers", params: params, body: { publisher: attributes })
+      def create(attributes = UNSET, **params)
+        body_attrs, query = split_attributes(attributes, params)
+        post("/publishers", params: query, body: { publisher: body_attrs })
       end
 
-      def update(id, attributes, **params)
-        patch("/publishers/#{id}", params: params, body: { publisher: attributes })
+      def update(id, attributes = UNSET, **params)
+        body_attrs, query = split_attributes(attributes, params)
+        patch("/publishers/#{id}", params: query, body: { publisher: body_attrs })
       end
 
       def find_linkedin_users(id, **params)
