@@ -10,16 +10,16 @@ require_relative "hi_energy_ai/paginator"
 require_relative "hi_energy_ai/resource"
 require_relative "hi_energy_ai/client"
 
-Dir[File.join(__dir__, "hi_energy_ai/resources", "*.rb")].sort.each { |file| require file }
+Dir[File.join(__dir__, "hi_energy_ai/resources", "*.rb")].each { |file| require file }
 
 module HiEnergyAi
   class << self
-    def new(**options)
-      Client.new(**options)
+    def new(**)
+      Client.new(**)
     end
 
-    def configure(&block)
-      Client.configure(&block)
+    def configure(&)
+      Client.configure(&)
     end
 
     def documentation_url

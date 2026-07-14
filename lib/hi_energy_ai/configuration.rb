@@ -9,8 +9,8 @@ module HiEnergyAi
 
     attr_accessor :api_key, :bearer_token, :base_url, :app_origin, :timeout, :user_agent, :dry_run
 
-    alias_method :server_dry_run, :dry_run
-    alias_method :server_dry_run=, :dry_run=
+    alias server_dry_run dry_run
+    alias server_dry_run= dry_run=
 
     def initialize
       @app_origin = APP_ORIGIN

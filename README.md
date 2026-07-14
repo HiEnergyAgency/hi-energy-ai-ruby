@@ -385,14 +385,17 @@ Sign in at [app.hienergy.ai](https://app.hienergy.ai) and visit [API Documentati
 ```bash
 git clone https://github.com/HiEnergyAgency/hi_energy_api.git
 cd hi_energy_api
-bundle install
-bundle exec rspec
+bin/setup              # install dependencies
+bundle exec rake       # run specs + RuboCop
 ```
 
-Interactive console:
+Individual tasks:
 
 ```bash
-bin/console
+bundle exec rspec      # run the test suite
+bundle exec rubocop    # run the linter
+bundle exec rubocop -a # autocorrect safe offenses
+bin/console            # interactive REPL with the gem loaded
 ```
 
 To run the checks, build the gem, and publish the current version to RubyGems:

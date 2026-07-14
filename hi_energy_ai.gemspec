@@ -5,8 +5,8 @@ require_relative "lib/hi_energy_ai/version"
 Gem::Specification.new do |spec|
   spec.name = "hi_energy_ai"
   spec.version = HiEnergyAi::VERSION
-  spec.authors = [ "Patrick Karsh" ]
-  spec.email = [ "patrick@hienergy.ai" ]
+  spec.authors = ["Patrick Karsh"]
+  spec.email = ["patrick@hienergy.ai"]
 
   spec.summary = "Official Ruby client for the Hi Energy AI affiliate marketing API"
   spec.description = <<~DESC.strip
@@ -26,10 +26,10 @@ Gem::Specification.new do |spec|
 
   spec.files = Dir.chdir(__dir__) do
     Dir.glob("{lib/**/*,README.md,CHANGELOG.md,LICENSE.txt}", File::FNM_DOTMATCH)
-      .select { |path| File.file?(path) }
+       .select { |path| File.file?(path) }
   end
 
-  spec.require_paths = [ "lib" ]
+  spec.require_paths = ["lib"]
 
   spec.add_dependency "faraday", "~> 2.14"
   spec.add_dependency "faraday-net_http", "~> 2.0"
@@ -37,5 +37,7 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency "rake", "~> 13.0"
   spec.add_development_dependency "rspec", "~> 3.13"
+  spec.add_development_dependency "rubocop", "~> 1.65"
+  spec.add_development_dependency "rubocop-rspec", "~> 3.0"
   spec.add_development_dependency "webmock", "~> 3.23"
 end

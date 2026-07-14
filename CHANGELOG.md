@@ -14,6 +14,8 @@
   `client.contacts.create(email: "x@y.com")` works the same as
   `client.contacts.create({ email: "x@y.com" })`.
 - `bin/publish` release workflow script.
+- RuboCop linting (`bundle exec rubocop`), a combined `rake` task
+  (specs + lint), an `.rspec` config, and a RuboCop step in CI.
 
 ### Changed
 
